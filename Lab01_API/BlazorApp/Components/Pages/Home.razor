@@ -1,0 +1,87 @@
+﻿@page "/"
+@inject IConfiguration Configuration
+@inject IJSRuntime JS
+
+<PageTitle>Sorting Demo</PageTitle>
+
+<h1>QuickSort API Demo</h1>
+
+<div class="mb-3">
+    <button class="btn btn-outline-secondary" @onclick="CheckHealthAsync">Check API Health</button>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(healthMessage))
+{
+    <p class="@(isHealthy ? "text-success" : "text-danger")">@healthMessage</p>
+}
+
+<p>Enter comma-separated integers:</p>
+<input @bind="numbersInput" style="width: 320px;" />
+<button class="btn btn-primary ms-2" @onclick="SortAsync">Sort</button>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <p class="text-danger mt-3">@errorMessage</p>
+}
+
+<h3 class="mt-3">Result</h3>
+<pre>@resultText</pre>
+
+@code {
+    private string numbersInput = "5,2,9,1,5,6";
+    private string resultText = string.Empty;
+    private string errorMessage = string.Empty;
+    private string healthMessage = string.Empty;
+    private bool isHealthy;
+
+    private async Task CheckHealthAsync()
+    {
+        errorMessage = string.Empty;
+        healthMessage = string.Empty;
+
+        var apiBaseUrl = Configuration["ApiSettings:BaseUrl"];
+        if (string.IsNullOrWhiteSpace(apiBaseUrl))
+        {
+            healthMessage = "API base URL is not configured.";
+            isHealthy = false;
+            return;
+        }
+
+        try
+        {
+            var health = await JS.InvokeAsync<HealthResponse>("sortingApi.health", apiBaseUrl);
+            isHealthy = string.Equals(health.Status, "Healthy", StringComparison.OrdinalIgnoreCase);
+            healthMessage = isHealthy ? "API is reachable and healthy." : $"API returned status: {health.Status}";
+        }
+        catch (JSException ex)
+        {
+            isHealthy = false;
+            healthMessage = ex.Message;
+        }
+    }
+
+    private async Task SortAsync()
+    {
+        errorMessage = string.Empty;
+
+        var apiBaseUrl = Configuration["ApiSettings:BaseUrl"];
+        if (string.IsNullOrWhiteSpace(apiBaseUrl))
+        {
+            errorMessage = "API base URL is not configured.";
+            return;
+        }
+
+        try
+        {
+            var sorted = await JS.InvokeAsync<int[]>("sortingApi.quickSort", apiBaseUrl, numbersInput);
+            resultText = string.Join(", ", sorted);
+        }
+        catch (JSException ex)
+        {
+            errorMessage = ex.Message;
+            resultText = string.Empty;
+        }
+    }
+
+    private sealed record HealthResponse(string Status);
+}

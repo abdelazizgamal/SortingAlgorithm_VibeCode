@@ -1,0 +1,59 @@
+@page "/benchmark"
+@inject IConfiguration Configuration
+@inject IJSRuntime JS
+
+<PageTitle>Benchmark</PageTitle>
+
+<h1>Sorting Benchmark</h1>
+
+<p>Runs QuickSort and Array.Sort on the same large array for 100 iterations.</p>
+<button class="btn btn-primary" @onclick="RunBenchmarkAsync">Run Benchmark</button>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <p class="text-danger mt-3">@errorMessage</p>
+}
+
+@if (result is not null)
+{
+    <div class="mt-3">
+        <p><strong>Iterations:</strong> @result.Iterations</p>
+        <p><strong>Array Size:</strong> @result.ArraySize</p>
+        <p><strong>QuickSort Avg:</strong> @result.QuickSortAverageMilliseconds.ToString("F4") ms</p>
+        <p><strong>Array.Sort Avg:</strong> @result.ArraySortAverageMilliseconds.ToString("F4") ms</p>
+    </div>
+}
+
+@code {
+    private string errorMessage = string.Empty;
+    private BenchmarkResult? result;
+
+    private async Task RunBenchmarkAsync()
+    {
+        errorMessage = string.Empty;
+
+        var apiBaseUrl = Configuration["ApiSettings:BaseUrl"];
+        if (string.IsNullOrWhiteSpace(apiBaseUrl))
+        {
+            errorMessage = "API base URL is not configured.";
+            result = null;
+            return;
+        }
+
+        try
+        {
+            result = await JS.InvokeAsync<BenchmarkResult>("sortingApi.benchmark", apiBaseUrl);
+        }
+        catch (JSException ex)
+        {
+            errorMessage = ex.Message;
+            result = null;
+        }
+    }
+
+    private sealed record BenchmarkResult(
+        int Iterations,
+        int ArraySize,
+        double QuickSortAverageMilliseconds,
+        double ArraySortAverageMilliseconds);
+}

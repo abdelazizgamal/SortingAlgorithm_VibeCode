@@ -1,0 +1,255 @@
+@page "/sorting"
+@inject HttpClient Http
+@inject IConfiguration Configuration
+@inject IJSRuntime JS
+@using System.Text.Json
+@using System.Text.Json.Serialization
+
+<PageTitle>Sorting</PageTitle>
+
+<div class="container mt-4">
+    <h1>Sorting Algorithms</h1>
+    <p>Select an algorithm and enter comma-separated numbers to sort.</p>
+
+    <div class="card p-4">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="numberInput" class="form-label">Numbers (comma-separated):</label>
+                <input 
+                    type="text" 
+                    id="numberInput"
+                    class="form-control" 
+                    placeholder="e.g., 5, 2, 9, 1, 7"
+                    @bind="inputNumbers"
+                    @bind:event="oninput"
+                />
+            </div>
+
+            <div class="col-md-6">
+                <label for="algorithmSelect" class="form-label">Algorithm:</label>
+                <select 
+                    id="algorithmSelect"
+                    class="form-select" 
+                    @bind="selectedAlgorithm"
+                    disabled="@(isLoading || algorithms == null || algorithms.Length == 0)"
+                >
+                    <option value="">-- Select an algorithm --</option>
+                    @if (algorithms is not null)
+                    {
+                        @foreach (var algo in algorithms)
+                        {
+                            <option value="@algo">@algo</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-12">
+                <button 
+                    class="btn btn-primary" 
+                    @onclick="SortAsync"
+                    disabled="@(isLoading || string.IsNullOrWhiteSpace(inputNumbers) || string.IsNullOrWhiteSpace(selectedAlgorithm))"
+                >
+                    @if (isLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        <span>Sorting...</span>
+                    }
+                    else
+                    {
+                        <span>Sort</span>
+                    }
+                </button>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(errorMessage))
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @errorMessage
+                <button type="button" class="btn-close" @onclick="() => errorMessage = string.Empty"></button>
+            </div>
+        }
+
+        @if (sortResult is not null)
+        {
+            <div class="alert alert-success mt-4">
+                <h5>Result</h5>
+                <p><strong>Algorithm:</strong> @sortResult.Algorithm</p>
+                <p><strong>Execution Time:</strong> @sortResult.ExecutionTimeMilliseconds.ToString("F4") ms</p>
+                <p><strong>Sorted Array:</strong> @string.Join(", ", sortResult.SortedArray ?? Array.Empty<int>())</p>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private string inputNumbers = string.Empty;
+    private string selectedAlgorithm = string.Empty;
+    private string[] algorithms = Array.Empty<string>();
+    private bool isLoading;
+    private string errorMessage = string.Empty;
+    private SortResult? sortResult;
+
+    // Configure JSON serializer options to handle PascalCase from API
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await LoadAlgorithmsAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load algorithms: {ex.Message}";
+        }
+    }
+
+    private async Task LoadAlgorithmsAsync()
+    {
+        var apiBaseUrl = Configuration["ApiSettings:BaseUrl"];
+        if (string.IsNullOrWhiteSpace(apiBaseUrl))
+        {
+            errorMessage = "API base URL is not configured.";
+            return;
+        }
+
+        try
+        {
+            algorithms = await Http.GetFromJsonAsync<string[]>($"{apiBaseUrl}/api/sorting/algorithms")
+                ?? Array.Empty<string>();
+        }
+        catch (HttpRequestException ex)
+        {
+            errorMessage = $"Failed to load algorithms: {ex.Message}";
+            algorithms = Array.Empty<string>();
+        }
+    }
+
+    private async Task SortAsync()
+    {
+        errorMessage = string.Empty;
+        sortResult = null;
+
+        if (string.IsNullOrWhiteSpace(inputNumbers))
+        {
+            errorMessage = "Please enter numbers to sort.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(selectedAlgorithm))
+        {
+            errorMessage = "Please select an algorithm.";
+            return;
+        }
+
+        // Parse comma-separated numbers
+        var numberList = new List<int>();
+        try
+        {
+            var parts = inputNumbers.Split(',');
+            foreach (var part in parts)
+            {
+                var trimmed = part.Trim();
+                if (!string.IsNullOrWhiteSpace(trimmed))
+                {
+                    if (int.TryParse(trimmed, out var number))
+                    {
+                        numberList.Add(number);
+                    }
+                    else
+                    {
+                        errorMessage = $"Invalid number: '{trimmed}'. Please enter valid integers.";
+                        return;
+                    }
+                }
+            }
+
+            if (numberList.Count == 0)
+            {
+                errorMessage = "Please enter at least one number.";
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error parsing numbers: {ex.Message}";
+            return;
+        }
+
+        isLoading = true;
+
+        try
+        {
+            var apiBaseUrl = Configuration["ApiSettings:BaseUrl"];
+            if (string.IsNullOrWhiteSpace(apiBaseUrl))
+            {
+                errorMessage = "API base URL is not configured.";
+                return;
+            }
+
+            var request = new SortRequest
+            {
+                Numbers = numberList.ToArray(),
+                Algorithm = selectedAlgorithm
+            };
+
+            var response = await Http.PostAsJsonAsync($"{apiBaseUrl}/api/sorting/sort", request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"API Response: {jsonContent}");
+                sortResult = JsonSerializer.Deserialize<SortResult>(jsonContent, JsonOptions);
+                
+                if (sortResult == null)
+                {
+                    errorMessage = "Failed to parse response from API.";
+                }
+            }
+            else
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                errorMessage = $"Error: {content}";
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            errorMessage = $"API request failed: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private class SortRequest
+    {
+        public int[]? Numbers { get; set; }
+        public string? Algorithm { get; set; }
+    }
+
+    private class SortResult
+    {
+        [JsonPropertyName("SortedArray")]
+        public int[]? SortedArray { get; set; }
+
+        [JsonPropertyName("Algorithm")]
+        public string? Algorithm { get; set; }
+
+        [JsonPropertyName("ExecutionTimeMilliseconds")]
+        public double ExecutionTimeMilliseconds { get; set; }
+    }
+}
