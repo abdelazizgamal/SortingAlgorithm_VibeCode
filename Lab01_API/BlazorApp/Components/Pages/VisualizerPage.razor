@@ -1,0 +1,933 @@
+@page "/visualizer"
+@inject IJSRuntime JS
+
+<PageTitle>Visualizer - SortHub</PageTitle>
+
+<div class="visualizer-container">
+    <div class="visualizer-header">
+        <h1>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M.5 1a.5.5 0 0 0 0 1h1.57a.5.5 0 0 0 .5-.5V1a.5.5 0 0 0-.5-.5H.5zm0 3a.5.5 0 0 0 0 1h1.57a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5H.5zm0 3a.5.5 0 0 0 0 1h1.57a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5H.5zm0 3a.5.5 0 0 0 0 1h1.57a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5H.5zm0 3a.5.5 0 0 0 0 1h1.57a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5H.5zm2.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1.07a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1.07zm1.57-1a.5.5 0 0 0 0 1h.5a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-.5a.5.5 0 0 0 0 1zm0-3a.5.5 0 0 0 0 1h.5a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-.5a.5.5 0 0 0 0 1zm0-3a.5.5 0 0 0 0 1h.5a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-.5a.5.5 0 0 0 0 1zm0-3a.5.5 0 0 0 0 1h.5a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-.5a.5.5 0 0 0 0 1z"/>
+            </svg>
+            Algorithm Visualizer
+        </h1>
+        <p>Watch sorting algorithms in action with real-time visualization</p>
+    </div>
+
+    <div class="visualizer-card">
+        <div class="controls-section">
+            <div class="control-group">
+                <label for="algorithmSelect" class="control-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M12.854.646a.5.5 0 0 0-.708 0l-7 7-3.5-3.5a.5.5 0 1 0-.708.708l4 4a.5.5 0 0 0 .708 0l7.5-7.5a.5.5 0 0 0-.708-.708z"/>
+                    </svg>
+                    Algorithm
+                </label>
+                <select id="algorithmSelect" @bind="selectedAlgorithm" disabled="@isSorting">
+                    <option value="bubble">BubbleSort</option>
+                    <option value="quick">QuickSort</option>
+                    <option value="merge">MergeSort</option>
+                    <option value="insertion">InsertionSort</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="speedSlider" class="control-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+                    </svg>
+                    Speed: <span class="speed-value">@animationDelay ms</span>
+                </label>
+                <input type="range" id="speedSlider" min="10" max="500" step="10" @bind="animationDelay" disabled="@isSorting" class="slider" />
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-secondary" @onclick="GenerateRandomArray" disabled="@isSorting">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 2.646-2.647a.5.5 0 0 1 .708 0zM1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                    </svg>
+                    Generate New Array
+                </button>
+                <button class="btn btn-primary btn-large" @onclick="StartSort" disabled="@isSorting">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M11.596 8.697l-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+                    </svg>
+                    Start Sort
+                </button>
+                <button class="btn btn-danger btn-large" @onclick="StopSort" disabled="@(!isSorting)">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M5.5 5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V5zm5 0a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V5z"/>
+                    </svg>
+                    Stop
+                </button>
+            </div>
+        </div>
+
+        <div class="canvas-wrapper">
+            <canvas id="sortingCanvas" width="900" height="400"></canvas>
+        </div>
+
+        <div class="stats-and-status">
+            <div class="status-section">
+                <div class="status-message">
+                    @if (isSorting)
+                    {
+                        <span class="status-sorting">
+                            <span class="spinner-dot"></span>
+                            Sorting...
+                        </span>
+                    }
+                    else if (!string.IsNullOrWhiteSpace(statusMessage))
+                    {
+                        <span class="status-done">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                            </svg>
+                            @statusMessage
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="status-idle">Ready to sort</span>
+                    }
+                </div>
+            </div>
+
+            <div class="live-stats-section">
+                <div class="stats-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M1 11a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1v-3zm5-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-7zm5-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V2z"/>
+                    </svg>
+                    Live Statistics
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon comparisons">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M1 11a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1v-3z"/>
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">Comparisons</div>
+                            <div class="stat-value">@comparisons</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon swaps">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M8.5 6.5a.5.5 0 1 0-1 0v3.362l-1.146-1.147a.5.5 0 0 0-.708.708l2 2a.5.5 0 0 0 .708 0l2-2a.5.5 0 0 0-.708-.708L8.5 9.862V6.5z"/>
+                                <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">Swaps</div>
+                            <div class="stat-value">@swaps</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon time">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm0-1A7 7 0 1 1 8 1a7 7 0 0 1 0 14z"/>
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">Elapsed Time</div>
+                            <div class="stat-value">@elapsedTime ms</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="legend-section">
+            <div class="legend-title">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M2.5 1A1.5 1.5 0 0 0 1 2.5v3A1.5 1.5 0 0 0 2.5 7h3A1.5 1.5 0 0 0 7 5.5v-3A1.5 1.5 0 0 0 5.5 1h-3zM2 2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-3zm6.5-1A1.5 1.5 0 0 0 7 2.5v3A1.5 1.5 0 0 0 8.5 7h3a1.5 1.5 0 0 0 1.5-1.5v-3A1.5 1.5 0 0 0 11.5 1h-3zM8 2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-3zM.5 9A1.5 1.5 0 0 0-1 10.5v3A1.5 1.5 0 0 0 .5 15h3a1.5 1.5 0 0 0 1.5-1.5v-3A1.5 1.5 0 0 0 3.5 9h-3zm1.5.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-3zm6.5-.5A1.5 1.5 0 0 0 7 10.5v3a1.5 1.5 0 0 0 1.5 1.5h3a1.5 1.5 0 0 0 1.5-1.5v-3a1.5 1.5 0 0 0-1.5-1.5h-3z"/>
+                </svg>
+                Color Legend
+            </div>
+            <div class="legend-grid">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #4682B4;"></div>
+                    <div class="legend-text">
+                        <div class="legend-name">Unsorted</div>
+                        <div class="legend-desc">Elements not yet processed</div>
+                    </div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #FF8C00;"></div>
+                    <div class="legend-text">
+                        <div class="legend-name">Comparing</div>
+                        <div class="legend-desc">Currently being compared</div>
+                    </div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #28A745;"></div>
+                    <div class="legend-text">
+                        <div class="legend-name">Sorted</div>
+                        <div class="legend-desc">Already in final position</div>
+                    </div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #DC3545;"></div>
+                    <div class="legend-text">
+                        <div class="legend-name">Pivot</div>
+                        <div class="legend-desc">Pivot element (QuickSort)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private int[]? currentArray;
+    private string selectedAlgorithm = "bubble";
+    private int animationDelay = 50;
+    private bool isSorting = false;
+    private bool shouldStop = false;
+    private string statusMessage = string.Empty;
+    private DateTime sortStartTime;
+    private CancellationTokenSource? cancellationTokenSource;
+
+    // Live statistics
+    private long comparisons = 0;
+    private long swaps = 0;
+    private long elapsedTime = 0;
+    private System.Timers.Timer? statsTimer;
+
+    // Canvas properties
+    private const int CanvasWidth = 900;
+    private const int CanvasHeight = 400;
+    private const int BarPadding = 2;
+
+    // Color definitions
+    private const string ColorUnsorted = "#4682B4";    // Steel Blue
+    private const string ColorComparing = "#FF8C00";   // Orange
+    private const string ColorSorted = "#28A745";      // Green
+    private const string ColorPivot = "#DC3545";       // Red
+    private const string ColorBackground = "#F5F5F5";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await GenerateRandomArray();
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task GenerateRandomArray()
+    {
+        var random = new Random();
+        currentArray = new int[60];
+        
+        for (int i = 0; i < currentArray.Length; i++)
+        {
+            currentArray[i] = random.Next(5, 351);
+        }
+
+        await DrawArray(null, null, null);
+        ResetStats();
+        statusMessage = string.Empty;
+    }
+
+    private void ResetStats()
+    {
+        comparisons = 0;
+        swaps = 0;
+        elapsedTime = 0;
+    }
+
+    private void StartStatsTimer()
+    {
+        statsTimer = new System.Timers.Timer(50);
+        statsTimer.Elapsed += (sender, e) =>
+        {
+            elapsedTime = (long)(DateTime.Now - sortStartTime).TotalMilliseconds;
+            InvokeAsync(StateHasChanged);
+        };
+        statsTimer.AutoReset = true;
+        statsTimer.Start();
+    }
+
+    private void StopStatsTimer()
+    {
+        statsTimer?.Stop();
+        statsTimer?.Dispose();
+        statsTimer = null;
+    }
+
+    private async Task DrawArray(int[]? compareIndices = null, int[]? sortedIndices = null, int? pivotIndex = null)
+    {
+        if (currentArray is null) return;
+
+        try
+        {
+            var drawConfig = new
+            {
+                array = currentArray,
+                compareIndices = compareIndices ?? Array.Empty<int>(),
+                sortedIndices = sortedIndices ?? Array.Empty<int>(),
+                pivotIndex = pivotIndex ?? -1,
+                canvasWidth = CanvasWidth,
+                canvasHeight = CanvasHeight,
+                barPadding = BarPadding,
+                colorUnsorted = ColorUnsorted,
+                colorComparing = ColorComparing,
+                colorSorted = ColorSorted,
+                colorPivot = ColorPivot,
+                colorBackground = ColorBackground
+            };
+
+            await JS.InvokeVoidAsync("drawSortingArray", drawConfig);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Canvas draw error: {ex.Message}");
+        }
+    }
+
+    private async Task StartSort()
+    {
+        if (currentArray is null || isSorting) return;
+
+        isSorting = true;
+        shouldStop = false;
+        cancellationTokenSource = new CancellationTokenSource();
+        sortStartTime = DateTime.Now;
+        ResetStats();
+        statusMessage = string.Empty;
+        StartStatsTimer();
+
+        try
+        {
+            switch (selectedAlgorithm)
+            {
+                case "bubble":
+                    await AnimatedBubbleSort(cancellationTokenSource.Token);
+                    break;
+                case "quick":
+                    await AnimatedQuickSort(0, currentArray.Length - 1, cancellationTokenSource.Token);
+                    break;
+                case "merge":
+                    await AnimatedMergeSort(0, currentArray.Length - 1, cancellationTokenSource.Token);
+                    break;
+                case "insertion":
+                    await AnimatedInsertionSort(cancellationTokenSource.Token);
+                    break;
+            }
+
+            if (!shouldStop)
+            {
+                var elapsed = DateTime.Now - sortStartTime;
+                statusMessage = $"Done! Sorted in {elapsed.TotalMilliseconds:F2} ms";
+                await DrawArray();
+            }
+            else
+            {
+                statusMessage = "Sorting stopped by user";
+            }
+        }
+        finally
+        {
+            isSorting = false;
+            StopStatsTimer();
+            cancellationTokenSource?.Dispose();
+        }
+    }
+
+    private Task StopSort()
+    {
+        shouldStop = true;
+        isSorting = false;
+        StopStatsTimer();
+        cancellationTokenSource?.Cancel();
+        return Task.CompletedTask;
+    }
+
+    private async Task AnimatedBubbleSort(CancellationToken ct)
+    {
+        int n = currentArray!.Length;
+        var sortedIndices = new HashSet<int>();
+
+        for (int i = 0; i < n - 1; i++)
+        {
+            for (int j = 0; j < n - i - 1; j++)
+            {
+                if (ct.IsCancellationRequested) return;
+
+                for (int k = n - i; k < n; k++)
+                {
+                    sortedIndices.Add(k);
+                }
+
+                comparisons++;
+                await DrawArray(new[] { j, j + 1 }, sortedIndices.ToArray());
+                await Task.Delay(animationDelay, ct);
+
+                if (currentArray[j] > currentArray[j + 1])
+                {
+                    (currentArray[j], currentArray[j + 1]) = (currentArray[j + 1], currentArray[j]);
+                    swaps++;
+                }
+            }
+        }
+
+        for (int i = 0; i < n; i++)
+        {
+            sortedIndices.Add(i);
+        }
+        await DrawArray(null, sortedIndices.ToArray());
+    }
+
+    private async Task AnimatedInsertionSort(CancellationToken ct)
+    {
+        int n = currentArray!.Length;
+        var sortedIndices = new HashSet<int> { 0 };
+
+        for (int i = 1; i < n; i++)
+        {
+            if (ct.IsCancellationRequested) return;
+
+            int key = currentArray[i];
+            int j = i - 1;
+
+            while (j >= 0 && currentArray[j] > key)
+            {
+                if (ct.IsCancellationRequested) return;
+
+                comparisons++;
+                await DrawArray(new[] { j, i }, sortedIndices.ToArray());
+                await Task.Delay(animationDelay, ct);
+
+                currentArray[j + 1] = currentArray[j];
+                swaps++;
+                j--;
+            }
+
+            currentArray[j + 1] = key;
+            sortedIndices.Add(i);
+            await DrawArray(null, sortedIndices.ToArray());
+            await Task.Delay(animationDelay, ct);
+        }
+
+        for (int i = 0; i < n; i++)
+        {
+            sortedIndices.Add(i);
+        }
+        await DrawArray(null, sortedIndices.ToArray());
+    }
+
+    private async Task AnimatedQuickSort(int low, int high, CancellationToken ct)
+    {
+        if (ct.IsCancellationRequested) return;
+
+        if (low < high)
+        {
+            int pi = await AnimatedPartition(low, high, ct);
+            await AnimatedQuickSort(low, pi - 1, ct);
+            await AnimatedQuickSort(pi + 1, high, ct);
+        }
+        else if (low == high)
+        {
+            await DrawArray(null, new[] { low });
+        }
+    }
+
+    private async Task<int> AnimatedPartition(int low, int high, CancellationToken ct)
+    {
+        int pivot = currentArray![high];
+        int i = low - 1;
+
+        for (int j = low; j < high; j++)
+        {
+            if (ct.IsCancellationRequested) return i + 1;
+
+            comparisons++;
+            await DrawArray(new[] { j, high }, null, high);
+            await Task.Delay(animationDelay, ct);
+
+            if (currentArray[j] < pivot)
+            {
+                i++;
+                (currentArray[i], currentArray[j]) = (currentArray[j], currentArray[i]);
+                swaps++;
+            }
+        }
+
+        (currentArray[i + 1], currentArray[high]) = (currentArray[high], currentArray[i + 1]);
+        swaps++;
+        return i + 1;
+    }
+
+    private async Task AnimatedMergeSort(int left, int right, CancellationToken ct)
+    {
+        if (ct.IsCancellationRequested) return;
+
+        if (left < right)
+        {
+            int mid = left + (right - left) / 2;
+            await AnimatedMergeSort(left, mid, ct);
+            await AnimatedMergeSort(mid + 1, right, ct);
+            await AnimatedMerge(left, mid, right, ct);
+        }
+        else if (left == right)
+        {
+            await DrawArray(null, new[] { left });
+        }
+    }
+
+    private async Task AnimatedMerge(int left, int mid, int right, CancellationToken ct)
+    {
+        if (ct.IsCancellationRequested) return;
+
+        var leftArr = new int[mid - left + 1];
+        var rightArr = new int[right - mid];
+
+        Array.Copy(currentArray!, left, leftArr, 0, leftArr.Length);
+        Array.Copy(currentArray!, mid + 1, rightArr, 0, rightArr.Length);
+
+        int i = 0, j = 0, k = left;
+
+        while (i < leftArr.Length && j < rightArr.Length)
+        {
+            if (ct.IsCancellationRequested) return;
+
+            comparisons++;
+            var compareIdx = new[] { left + i, mid + 1 + j };
+            var sortedIdx = Enumerable.Range(left, k - left).ToArray();
+            await DrawArray(compareIdx, sortedIdx);
+            await Task.Delay(animationDelay, ct);
+
+            if (leftArr[i] <= rightArr[j])
+            {
+                currentArray![k++] = leftArr[i++];
+            }
+            else
+            {
+                currentArray![k++] = rightArr[j++];
+            }
+            swaps++;
+        }
+
+        while (i < leftArr.Length)
+        {
+            if (ct.IsCancellationRequested) return;
+            currentArray![k++] = leftArr[i++];
+            swaps++;
+        }
+
+        while (j < rightArr.Length)
+        {
+            if (ct.IsCancellationRequested) return;
+            currentArray![k++] = rightArr[j++];
+            swaps++;
+        }
+
+        var finalSorted = Enumerable.Range(left, right - left + 1).ToArray();
+        await DrawArray(null, finalSorted);
+        await Task.Delay(animationDelay, ct);
+    }
+}
+
+<style>
+    .visualizer-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 2rem 0;
+    }
+
+    .visualizer-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .visualizer-header h1 {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        font-size: 2.25rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .visualizer-header h1 svg {
+        width: 40px;
+        height: 40px;
+        color: var(--accent-green);
+    }
+
+    .visualizer-header p {
+        font-size: 1.125rem;
+        color: var(--text-light);
+    }
+
+    .visualizer-card {
+        background: var(--white);
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: var(--shadow-md);
+    }
+
+    .controls-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #F5F1E8 0%, var(--primary-light-green) 100%);
+        border-radius: 12px;
+        border: 1px solid var(--primary-light-green);
+    }
+
+    .control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .control-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        color: var(--dark-brown);
+        font-size: 0.95rem;
+    }
+
+    .control-label svg {
+        width: 18px;
+        height: 18px;
+        color: var(--accent-green);
+    }
+
+    .speed-value {
+        font-weight: 700;
+        color: var(--accent-green);
+    }
+
+    #algorithmSelect,
+    #speedSlider {
+        padding: 0.75rem;
+        border: 2px solid var(--primary-green);
+        border-radius: 8px;
+        font-size: 0.95rem;
+        background-color: var(--white);
+        color: var(--text-dark);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    #algorithmSelect:hover:not(:disabled),
+    #speedSlider:hover:not(:disabled) {
+        border-color: var(--accent-green);
+        box-shadow: 0 0 0 3px rgba(127, 198, 159, 0.1);
+    }
+
+    #algorithmSelect:disabled,
+    #speedSlider:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background-color: #f0f0f0;
+    }
+
+    .slider {
+        width: 100%;
+    }
+
+    .button-group {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: 1fr 1.5fr 0.8fr;
+        gap: 1rem;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--accent-green) 100%);
+        color: white;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-secondary {
+        background-color: var(--primary-cafe);
+        color: white;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+        background-color: var(--dark-brown);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-danger {
+        background-color: #DC3545;
+        color: white;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .btn-danger:hover:not(:disabled) {
+        background-color: #C82333;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-large {
+        font-size: 1rem;
+        padding: 1rem 2rem;
+    }
+
+    .canvas-wrapper {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .canvas-wrapper canvas {
+        display: block;
+        background: white;
+    }
+
+    .stats-and-status {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .status-section {
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        border: 2px solid var(--primary-light-green);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 3rem;
+    }
+
+    .status-message {
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .status-sorting {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: var(--accent-green);
+    }
+
+    .spinner-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background-color: var(--accent-green);
+        border-radius: 50%;
+    }
+
+    .status-done {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--success);
+    }
+
+    .status-done svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .status-idle {
+        color: var(--text-light);
+    }
+
+    .live-stats-section {
+        background: linear-gradient(135deg, #F5F1E8 0%, var(--primary-light-green) 100%);
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 2px solid var(--primary-light-green);
+    }
+
+    .stats-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--dark-brown);
+        margin-bottom: 1rem;
+    }
+
+    .stats-title svg {
+        width: 20px;
+        height: 20px;
+        color: var(--accent-green);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+
+    .stat-card {
+        background: var(--white);
+        border-radius: 10px;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid rgba(127, 198, 159, 0.2);
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .stat-icon.comparisons {
+        background: linear-gradient(135deg, #FF8C00 0%, #FF7F00 100%);
+    }
+
+    .stat-icon.swaps {
+        background: linear-gradient(135deg, #4682B4 0%, #36648B 100%);
+    }
+
+    .stat-icon.time {
+        background: linear-gradient(135deg, #28A745 0%, #20C997 100%);
+    }
+
+    .stat-icon svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    .stat-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .stat-label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-light);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--dark-brown);
+    }
+
+    .legend-section {
+        background: linear-gradient(135deg, #F5F1E8 0%, var(--primary-light-green) 100%);
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 2px solid var(--primary-light-green);
+    }
+
+    .legend-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--dark-brown);
+        margin-bottom: 1rem;
+    }
+
+    .legend-title svg {
+        width: 20px;
+        height: 20px;
+        color: var(--accent-green);
+    }
+
+    .legend-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1rem;
+        background: var(--white);
+        border-radius: 10px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid rgba(127, 198, 159, 0.2);
+    }
+
+    .legend-color {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        border: 2px solid rgba(0, 0, 0, 0.1);
+        flex-shrink: 0;
+    }
+
+    .legend-text {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .legend-name {
+        font-weight: 600;
+        color: var(--dark-brown);
+        font-size: 0.95rem;
+    }
+
+    .legend-desc {
+        font-size: 0.85rem;
+        color: var(--text-light);
+    }
+</style>

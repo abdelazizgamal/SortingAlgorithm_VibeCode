@@ -21,11 +21,22 @@ public static class SortingService
 
     /// <summary>
     /// Sorts an array using the specified algorithm.
+    /// Delegates to the appropriate sorting algorithm implementation based on the algorithm name.
     /// </summary>
-    /// <param name="input">The array to sort.</param>
-    /// <param name="algorithmName">The name of the sorting algorithm (case-insensitive).</param>
-    /// <returns>A sorted copy of the input array.</returns>
-    /// <exception cref="ArgumentException">Thrown when the algorithm name is not recognized.</exception>
+    /// <param name="input">The array of integers to sort. Cannot be null.</param>
+    /// <param name="algorithmName">The name of the sorting algorithm to use (case-insensitive).
+    /// Valid options: "quicksort", "quicksort-iterative", "bubblesort", "selectionsort", 
+    /// "insertionsort", "mergesort", "heapsort", "shellsort".</param>
+    /// <returns>A new sorted copy of the input array in ascending order.</returns>
+    /// <remarks>
+    /// This method acts as a router to delegate to the appropriate sorting algorithm.
+    /// All underlying algorithms return a new sorted copy without modifying the original array.
+    /// Time complexity varies by algorithm: O(n log n) average for QuickSort/MergeSort/HeapSort, 
+    /// O(n^2) for BubbleSort/SelectionSort/InsertionSort.
+    /// Space complexity: O(1) to O(n) depending on algorithm choice.
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="algorithmName"/> is null, empty, or represents an unknown algorithm.</exception>
     public static int[] Sort(int[] input, string algorithmName)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -53,11 +64,19 @@ public static class SortingService
     }
 
     /// <summary>
-    /// Sorts a copy of <paramref name="numbers"/> using recursive QuickSort (Lomuto partition, last-element pivot).
-    /// Complexity: average O(n log n), worst O(n^2), extra space O(log n) average via recursion.
+    /// Sorts a copy of the input array using the recursive QuickSort algorithm with Lomuto partition scheme.
+    /// Uses the last element as the pivot for each partition.
     /// </summary>
-    /// <param name="numbers">The array to sort.</param>
-    /// <returns>A sorted copy of the input array.</returns>
+    /// <param name="numbers">The array of integers to sort. Cannot be null.</param>
+    /// <returns>A new sorted copy of the input array in ascending order.</returns>
+    /// <remarks>
+    /// QuickSort is a divide-and-conquer algorithm that recursively partitions the array around a pivot.
+    /// Time Complexity: O(n log n) average case, O(n²) worst case (when pivot is consistently extreme).
+    /// Space Complexity: O(log n) average case (recursion stack), O(n) worst case.
+    /// This implementation uses the Lomuto partition scheme, which is stable when used with stable data types.
+    /// The algorithm sorts in-place but returns a copy of the original array.
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="numbers"/> is null.</exception>
     public static int[] QuickSort(int[] numbers)
     {
         ArgumentNullException.ThrowIfNull(numbers);
@@ -67,11 +86,19 @@ public static class SortingService
     }
 
     /// <summary>
-    /// Sorts a copy of <paramref name="numbers"/> using iterative QuickSort with an explicit stack.
-    /// Complexity: average O(n log n), worst O(n^2), extra space O(log n) average and O(n) worst.
+    /// Sorts a copy of the input array using iterative QuickSort with an explicit stack.
+    /// Eliminates recursion by using a stack-based approach to manage partition ranges.
     /// </summary>
-    /// <param name="numbers">The array to sort.</param>
-    /// <returns>A sorted copy of the input array.</returns>
+    /// <param name="numbers">The array of integers to sort. Cannot be null.</param>
+    /// <returns>A new sorted copy of the input array in ascending order.</returns>
+    /// <remarks>
+    /// Iterative QuickSort avoids potential stack overflow issues that can occur with recursive QuickSort on very large arrays.
+    /// Time Complexity: O(n log n) average case, O(n²) worst case.
+    /// Space Complexity: O(log n) average case (explicit stack), O(n) worst case.
+    /// Uses an explicit stack data structure to maintain partition ranges instead of recursion.
+    /// Performance is generally comparable to recursive QuickSort but with better memory safety.
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="numbers"/> is null.</exception>
     public static int[] QuickSortIterative(int[] numbers)
     {
         ArgumentNullException.ThrowIfNull(numbers);
@@ -103,9 +130,22 @@ public static class SortingService
     }
 
     /// <summary>
-    /// Benchmarks QuickSort and Array.Sort on the same large array for 100 runs.
+    /// Benchmarks recursive QuickSort against the built-in Array.Sort method on identical large arrays.
+    /// Runs both algorithms 100 times on an array of 10,000 random integers and compares performance.
     /// </summary>
-    /// <returns>Average execution times in milliseconds for each algorithm.</returns>
+    /// <returns>A <see cref="SortBenchmarkResult"/> containing average execution times in milliseconds
+    /// for QuickSort and Array.Sort, along with the number of iterations and array size used.</returns>
+    /// <remarks>
+    /// This benchmark provides insight into the relative performance of the custom QuickSort implementation
+    /// versus the optimized built-in Array.Sort (which uses an adaptive sorting algorithm).
+    /// The benchmark uses a fixed random seed (12345) to ensure reproducible results across runs.
+    /// Array.Sort typically outperforms naive QuickSort due to extensive optimizations like:
+    /// - Introsort (switching to HeapSort for worst-case safety)
+    /// - Cache-locality improvements
+    /// - Multiple algorithm selection based on array characteristics
+    /// Results may vary based on system load and hardware characteristics.
+    /// </remarks>
+    /// <exception cref="OutOfMemoryException">Thrown if the system cannot allocate memory for the 10,000-element test arrays.</exception>
     public static SortBenchmarkResult BenchmarkQuickSortVsArraySort()
     {
         const int iterations = 100;
@@ -140,6 +180,13 @@ public static class SortingService
         return new SortBenchmarkResult(iterations, arraySize, quickSortAverageMilliseconds, arraySortAverageMilliseconds);
     }
 
+    /// <summary>
+    /// Bubble Sort algorithm result record containing benchmark statistics.
+    /// </summary>
+    /// <param name="Iterations">The number of iterations performed in the benchmark.</param>
+    /// <param name="ArraySize">The size of arrays used in the benchmark.</param>
+    /// <param name="QuickSortAverageMilliseconds">Average execution time of QuickSort in milliseconds.</param>
+    /// <param name="ArraySortAverageMilliseconds">Average execution time of Array.Sort in milliseconds.</param>
     public sealed record SortBenchmarkResult(
         int Iterations,
         int ArraySize,
@@ -147,9 +194,20 @@ public static class SortingService
         double ArraySortAverageMilliseconds);
 
     /// <summary>
-    /// Sorts a copy of the input using Bubble Sort.
-    /// Complexity: O(n^2) average/worst, O(n) best.
+    /// Sorts a copy of the input array using Bubble Sort algorithm.
+    /// Repeatedly steps through the list, compares adjacent elements, and swaps them if they are in the wrong order.
     /// </summary>
+    /// <param name="numbers">The array of integers to sort. Cannot be null.</param>
+    /// <returns>A new sorted copy of the input array in ascending order.</returns>
+    /// <remarks>
+    /// Bubble Sort is a simple comparison-based sorting algorithm suitable for educational purposes and small datasets.
+    /// It is stable, meaning equal elements maintain their relative order after sorting.
+    /// Time Complexity: O(n²) average and worst case, O(n) best case (when array is already sorted with early termination).
+    /// Space Complexity: O(1) - sorts in-place with no additional space needed (excluding the output copy).
+    /// Performance: Generally slower than QuickSort, MergeSort, or HeapSort for large arrays due to quadratic complexity.
+    /// Optimization: Includes early termination when no swaps occur in a pass (best case detection).
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="numbers"/> is null.</exception>
     public static int[] BubbleSort(int[] numbers)
     {
         ArgumentNullException.ThrowIfNull(numbers);
@@ -173,9 +231,22 @@ public static class SortingService
     }
 
     /// <summary>
-    /// Sorts a copy of the input using Selection Sort.
-    /// Complexity: O(n^2) in all cases.
+    /// Sorts a copy of the input array using Selection Sort algorithm.
+    /// Divides the array into a sorted portion and an unsorted portion, repeatedly selecting the minimum element 
+    /// from the unsorted portion and moving it to the sorted portion.
     /// </summary>
+    /// <param name="numbers">The array of integers to sort. Cannot be null.</param>
+    /// <returns>A new sorted copy of the input array in ascending order.</returns>
+    /// <remarks>
+    /// Selection Sort is a simple, in-place comparison-based sorting algorithm suitable for small datasets.
+    /// It is not stable in its basic form, as swaps can alter the relative order of equal elements.
+    /// Time Complexity: O(n²) in all cases (best, average, and worst) - very predictable performance.
+    /// Space Complexity: O(1) - sorts in-place with no additional space needed (excluding the output copy).
+    /// Performance: Generally slower than QuickSort, MergeSort, or HeapSort but faster than BubbleSort in practice.
+    /// Advantage: Minimizes the number of writes to memory (only n-1 swaps required), useful for scenarios with expensive writes.
+    /// Use Case: Suitable when write operations are costly compared to read operations.
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="numbers"/> is null.</exception>
     public static int[] SelectionSort(int[] numbers)
     {
         ArgumentNullException.ThrowIfNull(numbers);
@@ -198,9 +269,23 @@ public static class SortingService
     }
 
     /// <summary>
-    /// Sorts a copy of the input using Insertion Sort.
-    /// Complexity: O(n^2) average/worst, O(n) best for nearly sorted.
+    /// Sorts a copy of the input array using Insertion Sort algorithm.
+    /// Builds the sorted array one item at a time by inserting each element into its correct position 
+    /// within the already-sorted portion of the array.
     /// </summary>
+    /// <param name="numbers">The array of integers to sort. Cannot be null.</param>
+    /// <returns>A new sorted copy of the input array in ascending order.</returns>
+    /// <remarks>
+    /// Insertion Sort is a stable, in-place comparison-based sorting algorithm that performs well on small datasets 
+    /// and nearly-sorted arrays. It is widely used in practice as part of hybrid algorithms like Timsort.
+    /// Time Complexity: O(n²) average and worst case, O(n) best case (when array is already sorted).
+    /// Space Complexity: O(1) - sorts in-place with no additional space needed (excluding the output copy).
+    /// Stability: Stable - equal elements maintain their relative order.
+    /// Performance: Excellent for small arrays or nearly-sorted data; generally faster than BubbleSort and SelectionSort.
+    /// Adaptive: Performs better as the input becomes more sorted; approximately O(n) for nearly-sorted arrays.
+    /// Use Case: Preferred for small arrays, linked lists, or as the base case in hybrid sorting algorithms.
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="numbers"/> is null.</exception>
     public static int[] InsertionSort(int[] numbers)
     {
         ArgumentNullException.ThrowIfNull(numbers);
@@ -224,9 +309,24 @@ public static class SortingService
     }
 
     /// <summary>
-    /// Sorts a copy of the input using Merge Sort.
-    /// Complexity: O(n log n) in all cases.
+    /// Sorts a copy of the input array using Merge Sort algorithm.
+    /// A divide-and-conquer algorithm that recursively divides the array into halves, sorts them, and merges the results.
     /// </summary>
+    /// <param name="numbers">The array of integers to sort. Cannot be null.</param>
+    /// <returns>A new sorted copy of the input array in ascending order.</returns>
+    /// <remarks>
+    /// Merge Sort is a stable, comparison-based sorting algorithm with guaranteed O(n log n) performance in all cases.
+    /// It is not in-place due to the merge operation but offers predictable and reliable performance.
+    /// Time Complexity: O(n log n) in all cases (best, average, and worst) - very consistent and predictable.
+    /// Space Complexity: O(n) - requires additional space for merging operations.
+    /// Stability: Stable - equal elements maintain their relative order after sorting.
+    /// Performance: Excellent for large datasets and when consistent performance is required.
+    /// Use Case: Preferred for linked lists, external sorting, and scenarios where O(n log n) guarantee is needed.
+    /// Not in-place: Requires O(n) auxiliary space for the merge process.
+    /// Cache Efficiency: Less cache-efficient than QuickSort due to scattered memory access patterns.
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="numbers"/> is null.</exception>
+    /// <exception cref="OutOfMemoryException">Thrown if insufficient memory is available for the merge buffer.</exception>
     public static int[] MergeSort(int[] numbers)
     {
         ArgumentNullException.ThrowIfNull(numbers);
@@ -241,9 +341,24 @@ public static class SortingService
     }
 
     /// <summary>
-    /// Sorts a copy of the input using Heap Sort.
-    /// Complexity: O(n log n) in all cases.
+    /// Sorts a copy of the input array using Heap Sort algorithm.
+    /// Uses a heap (binary search tree) data structure to efficiently sort the array by repeatedly extracting 
+    /// the maximum element and placing it at the end.
     /// </summary>
+    /// <param name="numbers">The array of integers to sort. Cannot be null.</param>
+    /// <returns>A new sorted copy of the input array in ascending order.</returns>
+    /// <remarks>
+    /// Heap Sort is an in-place, comparison-based sorting algorithm with guaranteed O(n log n) performance.
+    /// It is not stable, as the heap operations can alter the relative order of equal elements.
+    /// Time Complexity: O(n log n) in all cases (best, average, and worst) - very consistent and predictable.
+    /// Space Complexity: O(1) - sorts in-place with no additional space needed (excluding the output copy).
+    /// Stability: Not stable - equal elements may not maintain their relative order.
+    /// Performance: Consistent O(n log n) performance; generally slower than QuickSort in practice due to poor cache locality.
+    /// Use Case: Preferred when worst-case O(n log n) guarantee is required and in-place sorting is necessary.
+    /// Advantage: Never requires more than O(n log n) comparisons, making it suitable for real-time systems.
+    /// Not adaptive: Performance does not improve for partially sorted data.
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="numbers"/> is null.</exception>
     public static int[] HeapSort(int[] numbers)
     {
         ArgumentNullException.ThrowIfNull(numbers);
@@ -263,9 +378,25 @@ public static class SortingService
     }
 
     /// <summary>
-    /// Sorts a copy of the input using Shell Sort.
-    /// Complexity: ~O(n^1.5) typical, O(n^2) worst case depending on gap sequence.
+    /// Sorts a copy of the input array using Shell Sort algorithm.
+    /// A generalization of Insertion Sort that allows the exchange of elements far apart. 
+    /// Uses a decreasing sequence of gaps to sort subarrays, eventually using a gap of 1 (final Insertion Sort pass).
     /// </summary>
+    /// <param name="numbers">The array of integers to sort. Cannot be null.</param>
+    /// <returns>A new sorted copy of the input array in ascending order.</returns>
+    /// <remarks>
+    /// Shell Sort is an in-place, comparison-based sorting algorithm that is more efficient than Insertion Sort for larger arrays.
+    /// Performance depends significantly on the gap sequence used; this implementation uses the gap sequence: n/2, n/4, ..., 1.
+    /// Time Complexity: ~O(n^1.5) with the n/2 gap sequence (typical), O(n²) worst case depending on gap sequence chosen.
+    /// Alternative gap sequences (Knuth, Sedgewick) can improve performance to O(n log²n) or better.
+    /// Space Complexity: O(1) - sorts in-place with no additional space needed (excluding the output copy).
+    /// Stability: Not stable - equal elements may not maintain their relative order.
+    /// Performance: Good practical performance on medium-sized arrays; faster than Insertion Sort but slower than QuickSort/MergeSort.
+    /// Use Case: Suitable for medium-sized arrays when a simple in-place algorithm is preferred over more complex alternatives.
+    /// Adaptive: Performance improves for partially sorted arrays compared to Insertion Sort.
+    /// Cache Efficiency: Better cache locality than MergeSort; worse than QuickSort on average.
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="numbers"/> is null.</exception>
     public static int[] ShellSort(int[] numbers)
     {
         ArgumentNullException.ThrowIfNull(numbers);
