@@ -162,16 +162,16 @@ You should see:
 
 | Algorithm | Best Case | Average Case | Worst Case | Space | Stable | In-Place |
 |-----------|-----------|--------------|-----------|-------|--------|----------|
-| **QuickSort** | O(n log n) | O(n log n) | O(n²) | O(log n)* | ? | ? |
-| **QuickSort Iterative** | O(n log n) | O(n log n) | O(n²) | O(log n) | ? | ? |
-| **BubbleSort** | O(n)† | O(n²) | O(n²) | O(1) | ? | ? |
-| **SelectionSort** | O(n²) | O(n²) | O(n²) | O(1) | ? | ? |
-| **InsertionSort** | O(n)† | O(n²) | O(n²) | O(1) | ? | ? |
+| **QuickSort** | O(n log n) | O(n log n) | O(nÂ²) | O(log n)* | ? | ? |
+| **QuickSort Iterative** | O(n log n) | O(n log n) | O(nÂ²) | O(log n) | ? | ? |
+| **BubbleSort** | O(n)â€  | O(nÂ²) | O(nÂ²) | O(1) | ? | ? |
+| **SelectionSort** | O(nÂ²) | O(nÂ²) | O(nÂ²) | O(1) | ? | ? |
+| **InsertionSort** | O(n)â€  | O(nÂ²) | O(nÂ²) | O(1) | ? | ? |
 | **MergeSort** | O(n log n) | O(n log n) | O(n log n) | O(n) | ? | ? |
 | **HeapSort** | O(n log n) | O(n log n) | O(n log n) | O(1) | ? | ? |
-| **ShellSort** | O(n)† | O(n^1.5) | O(n²) | O(1) | ? | ? |
+| **ShellSort** | O(n)â€  | O(n^1.5) | O(nÂ²) | O(1) | ? | ? |
 
-*average recursion stack, †with early termination or pre-sorted data
+*average recursion stack, â€ with early termination or pre-sorted data
 
 ### Algorithm Details
 
@@ -195,7 +195,7 @@ You should see:
 
 **BubbleSort**
 - Simple comparison-based algorithm
-- Educational value—easy to understand
+- Educational valueâ€”easy to understand
 - Very slow for large arrays
 - Good for nearly-sorted data with early termination
 
@@ -203,7 +203,7 @@ You should see:
 - Builds sorted array incrementally
 - Excellent for small arrays (<50 elements)
 - Often used as base case in hybrid algorithms
-- Adaptive—performs well on nearly-sorted data
+- Adaptiveâ€”performs well on nearly-sorted data
 
 **HeapSort, SelectionSort, ShellSort**
 - Covered in API but not visualized due to UI complexity
@@ -273,12 +273,12 @@ You should see:
 ### Task A3: Algorithm Selection Endpoint
 
 **Prompt A3.1**
-> In my SortingController, add a new POST endpoint at the route /api/sorting/sort. It should accept a JSON request body with two fields: an integer array called numbers and a string called algorithm. It should call SortingService.Sort() with both values and return a JSON response containing: the sorted array, the algorithm name used, and the time taken in milliseconds measured with Stopwatch. Add proper validation — return a 400 Bad Request if the array is null, empty, or the algorithm name is missing.
+> In my SortingController, add a new POST endpoint at the route /api/sorting/sort. It should accept a JSON request body with two fields: an integer array called numbers and a string called algorithm. It should call SortingService.Sort() with both values and return a JSON response containing: the sorted array, the algorithm name used, and the time taken in milliseconds measured with Stopwatch. Add proper validation â€” return a 400 Bad Request if the array is null, empty, or the algorithm name is missing.
 
 ### Task A4: Blazor Sorting UI
 
 **Prompt A4.1**
-> In my Blazor Pages project, create a new page called SortingPage.razor at the route /sorting. The page should have: a text input where the user types comma-separated numbers, a dropdown <select> element populated with all available algorithm names fetched from a GET endpoint /api/sorting/algorithms, a Sort button that sends a POST request to /api/sorting/sort with the selected algorithm and input array, and a result section that displays the sorted array and the time taken. Use HttpClient with dependency injection to call the API. Show a loading spinner while waiting for the response.
+> In my Blazor Pages project, create a new page called SortingPage.razor at the route /sorting. The page should have: a text input where the user types comma-separated numbers, a dropdown select element populated with all available algorithm names fetched from a GET endpoint /api/sorting/algorithms, a Sort button that sends a POST request to /api/sorting/sort with the selected algorithm and input array, and a result section that displays the sorted array and the time taken. Use HttpClient with dependency injection to call the API. Show a loading spinner while waiting for the response.
 
 ### Task A5: Algorithm List Endpoint
 
@@ -288,7 +288,7 @@ You should see:
 ### Task B1: Parallel QuickSort Implementation
 
 **Prompt B1.1**
-> In my SortingService C# class, add a new method called ParallelQuickSort that accepts an int[] and returns a sorted int[]. Implement it using Task.Run() and Task.WhenAll() so that the two recursive sub-array sorts after partitioning run in parallel on separate threads. Add a threshold constant — if the sub-array length is below 1000 elements, fall back to the regular recursive QuickSort to avoid thread overhead on small inputs. Add XML doc comments explaining the threshold logic.
+> In my SortingService C# class, add a new method called ParallelQuickSort that accepts an int[] and returns a sorted int[]. Implement it using Task.Run() and Task.WhenAll() so that the two recursive sub-array sorts after partitioning run in parallel on separate threads. Add a threshold constant â€” if the sub-array length is below 1000 elements, fall back to the regular recursive QuickSort to avoid thread overhead on small inputs. Add XML doc comments explaining the threshold logic.
 
 ### Task B2: Parallel.Invoke Refactoring
 
@@ -321,13 +321,13 @@ You should see:
 > In VisualizerPage.razor, write a method called DrawArray that takes an int[] and draws each element as a vertical bar on the canvas. The bar width should be calculated as canvasWidth / array.Length. Bar height should be proportional to the element value relative to the max value in the array. Bars should be colored steel blue by default. Add a method GenerateRandomArray that creates a random array of 60 integers between 5 and 350, stores it in a field, and calls DrawArray.
 
 **Prompt C2.2**
-> In VisualizerPage.razor, implement an animated BubbleSort method called AnimatedBubbleSort. It should sort the array step by step — after each swap, call DrawArray but highlight the two elements being compared in orange and the already-sorted elements in green. Use await Task.Delay(50) between each step so the user can see the animation in real time. Add a boolean field isSorting to disable the Start button while sorting is in progress.
+> In VisualizerPage.razor, implement an animated BubbleSort method called AnimatedBubbleSort. It should sort the array step by step â€” after each swap, call DrawArray but highlight the two elements being compared in orange and the already-sorted elements in green. Use await Task.Delay(50) between each step so the user can see the animation in real time. Add a boolean field isSorting to disable the Start button while sorting is in progress.
 
 **Prompt C2.3**
 > In VisualizerPage.razor, implement an animated QuickSort method called AnimatedQuickSort. After each partition step, redraw the array with the following color coding: the pivot element in red, elements being compared in orange, elements already in their final sorted position in green, and unsorted elements in steel blue. Use await Task.Delay(30) between comparisons. The animation should make it visually clear how QuickSort divides and conquers the array.
 
 **Prompt C2.4**
-> In VisualizerPage.razor, add the following UI controls above the canvas: a dropdown to select the sorting algorithm — options are BubbleSort, QuickSort, MergeSort, and InsertionSort, a slider to control animation speed from 10ms to 500ms delay, a Generate New Array button that resets with a new random array, and a Start Sort button that runs the selected animated algorithm. Disable all controls while sorting is running and re-enable them when the sort is complete. Display a status message like 'Sorting...' or 'Done! Sorted in X ms' below the canvas.
+> In VisualizerPage.razor, add the following UI controls above the canvas: a dropdown to select the sorting algorithm â€” options are BubbleSort, QuickSort, MergeSort, and InsertionSort, a slider to control animation speed from 10ms to 500ms delay, a Generate New Array button that resets with a new random array, and a Start Sort button that runs the selected animated algorithm. Disable all controls while sorting is running and re-enable them when the sort is complete. Display a status message like 'Sorting...' or 'Done! Sorted in X ms' below the canvas.
 
 ### Task C3: Stop Button
 
@@ -354,40 +354,40 @@ You should see:
 Copilot generated a complete, working QuickSort implementation on the first try. The Lomuto partition scheme was correctly implemented with proper boundary checks, the recursion base case was correct, and the null-checking logic was sound. The code compiled immediately and passed all edge cases (empty arrays, single elements, duplicates). The variable naming was clear (`smallerElementIndex`, `pivot`) and the overall structure followed C# conventions perfectly.
 
 **What Needed Manual Correction:**
-The pivot selection strategy needed refinement—Copilot initially suggested random pivot selection, which sounds good in theory but makes results non-deterministic for testing. I changed it to last-element pivot for consistency and easier debugging. Array cloning wasn't initially included (the original mutated the input), which violated the principle of least surprise. I added `(int[])numbers.Clone()` at the start. The comments were minimal; I expanded them to explain why the Lomuto scheme works and when it might degrade to O(n²).
+The pivot selection strategy needed refinementâ€”Copilot initially suggested random pivot selection, which sounds good in theory but makes results non-deterministic for testing. I changed it to last-element pivot for consistency and easier debugging. Array cloning wasn't initially included (the original mutated the input), which violated the principle of least surprise. I added `(int[])numbers.Clone()` at the start. The comments were minimal; I expanded them to explain why the Lomuto scheme works and when it might degrade to O(nÂ²).
 
 **Best Prompt Wording:**
 > "Generate a QuickSort function in C# that takes an integer array and returns it sorted. Add it as a static method inside a SortingService class."
 
-This worked because it was specific about: (1) the method signature expected, (2) the class location, and (3) the input/output behavior. **Lesson:** Specify method names and class placement explicitly—Copilot then generates exactly what you asked for without guessing.
+This worked because it was specific about: (1) the method signature expected, (2) the class location, and (3) the input/output behavior. **Lesson:** Specify method names and class placement explicitlyâ€”Copilot then generates exactly what you asked for without guessing.
 
 ---
 
 ### Task A1: Expand Sorting Algorithms (BubbleSort, MergeSort, HeapSort, etc.)
 
 **What Copilot Got Right:**
-All 6 additional algorithms (BubbleSort, SelectionSort, InsertionSort, MergeSort, HeapSort, ShellSort) were generated correctly and compiled on first try. MergeSort's merge logic was particularly impressive—proper buffer management, correct left/right pointer advancement, and no off-by-one errors. HeapSort's heapify function was correct. All methods had appropriate XML documentation with complexity annotations. The code style matched QuickSort perfectly, making the file feel cohesive.
+All 6 additional algorithms (BubbleSort, SelectionSort, InsertionSort, MergeSort, HeapSort, ShellSort) were generated correctly and compiled on first try. MergeSort's merge logic was particularly impressiveâ€”proper buffer management, correct left/right pointer advancement, and no off-by-one errors. HeapSort's heapify function was correct. All methods had appropriate XML documentation with complexity annotations. The code style matched QuickSort perfectly, making the file feel cohesive.
 
 **What Needed Manual Correction:**
-MergeSort had an inefficiency: it allocated the buffer inside the recursive function repeatedly. I moved buffer allocation outside as a parameter passed through the recursion. ShellSort's gap sequence was the default (divide by 2), which is functional but suboptimal; I added a comment suggesting Knuth's or Sedgewick's sequences for better performance. BubbleSort lacked early termination optimization (when no swaps occur in a pass). I added a `swapped` flag and `break` statement—this is the difference between O(n) for nearly-sorted data vs O(n²). HeapSort was correct but I added clarifying comments about the heapify direction and parent/child index calculations, which are tricky to understand.
+MergeSort had an inefficiency: it allocated the buffer inside the recursive function repeatedly. I moved buffer allocation outside as a parameter passed through the recursion. ShellSort's gap sequence was the default (divide by 2), which is functional but suboptimal; I added a comment suggesting Knuth's or Sedgewick's sequences for better performance. BubbleSort lacked early termination optimization (when no swaps occur in a pass). I added a `swapped` flag and `break` statementâ€”this is the difference between O(n) for nearly-sorted data vs O(nÂ²). HeapSort was correct but I added clarifying comments about the heapify direction and parent/child index calculations, which are tricky to understand.
 
 **Best Prompt Wording:**
 > "Add the following sorting algorithms as separate methods: BubbleSort, SelectionSort, InsertionSort, MergeSort, HeapSort, and ShellSort. Each method must: accept an int[] as input, return a sorted int[], and have an XML doc comment briefly describing the algorithm and its time complexity."
 
-This worked because it: (1) listed all algorithms explicitly, (2) specified the exact method signature pattern, (3) requested documentation upfront. **Lesson:** When asking for multiple similar implementations, list them all at once and specify the exact pattern—Copilot then generates consistent, parallel code for all of them.
+This worked because it: (1) listed all algorithms explicitly, (2) specified the exact method signature pattern, (3) requested documentation upfront. **Lesson:** When asking for multiple similar implementations, list them all at once and specify the exact patternâ€”Copilot then generates consistent, parallel code for all of them.
 
 ---
 
 ### Task B1 & B2: Parallel QuickSort (Task.Run() vs Parallel.Invoke())
 
 **What Copilot Got Right:**
-Both the Task.Run() and Parallel.Invoke() implementations were syntactically correct and would compile. The threshold logic (1000 elements) was a reasonable suggestion. Proper Task.WhenAll() usage in the first version, correct action wrapping in the second version. The AggregateException handling in the Parallel.Invoke() version was correct—catching the aggregate and extracting the inner exception was the right approach.
+Both the Task.Run() and Parallel.Invoke() implementations were syntactically correct and would compile. The threshold logic (1000 elements) was a reasonable suggestion. Proper Task.WhenAll() usage in the first version, correct action wrapping in the second version. The AggregateException handling in the Parallel.Invoke() version was correctâ€”catching the aggregate and extracting the inner exception was the right approach.
 
 **What Needed Manual Correction:**
-The threshold of 1000 elements was a guess, not data-driven. Benchmarking revealed 5000 was optimal for the test environment—this required empirical validation. The implementations didn't include warm-up runs (JIT compilation was skewing results). Error messages in the AggregateException handler were generic; I made them more descriptive. The fallback logic wasn't explicitly clear—I added comments explaining that Task.Run() overhead (0.5ms per invocation) exceeds sort time for small arrays. Neither version included cancellation token support, which later became essential for the visualizer's stop button.
+The threshold of 1000 elements was a guess, not data-driven. Benchmarking revealed 5000 was optimal for the test environmentâ€”this required empirical validation. The implementations didn't include warm-up runs (JIT compilation was skewing results). Error messages in the AggregateException handler were generic; I made them more descriptive. The fallback logic wasn't explicitly clearâ€”I added comments explaining that Task.Run() overhead (0.5ms per invocation) exceeds sort time for small arrays. Neither version included cancellation token support, which later became essential for the visualizer's stop button.
 
 **Best Prompt Wording (First Attempt - Less Effective):**
-> "Add a ParallelQuickSort method that uses Task.Run() so that the two recursive sub-array sorts run in parallel on separate threads. Add a threshold constant—if the sub-array length is below 1000 elements, fall back to regular QuickSort."
+> "Add a ParallelQuickSort method that uses Task.Run() so that the two recursive sub-array sorts run in parallel on separate threads. Add a threshold constantâ€”if the sub-array length is below 1000 elements, fall back to regular QuickSort."
 
 **Improved Prompt Wording (Much Better):**
 > "Implement ParallelQuickSort using Parallel.Invoke() instead of Task.Run(). After each partition, if both sub-arrays are larger than 5000 elements, invoke them in parallel; otherwise use sequential sort. Wrap AggregateException in try-catch and include comments explaining why Parallel.Invoke() is better than manual threading for recursive algorithms."
@@ -399,10 +399,10 @@ The second prompt worked better because it: (1) specified the exact parallelizat
 ### Task 6: Unit Tests (xUnit)
 
 **What Copilot Got Right:**
-Copilot generated a comprehensive test suite covering all essential cases: empty array, single element, already sorted, reverse sorted, and duplicates. Test method naming followed xUnit conventions (`QuickSort_WithEmptyArray_ReturnsEmptyArray`). Assertions were precise using `Assert.Equal()` and `Assert.NotNull()`. The test structure was clean and each test isolated—no shared state between tests. All tests passed on first run.
+Copilot generated a comprehensive test suite covering all essential cases: empty array, single element, already sorted, reverse sorted, and duplicates. Test method naming followed xUnit conventions (`QuickSort_WithEmptyArray_ReturnsEmptyArray`). Assertions were precise using `Assert.Equal()` and `Assert.NotNull()`. The test structure was clean and each test isolatedâ€”no shared state between tests. All tests passed on first run.
 
 **What Needed Manual Correction:**
-The test data wasn't comprehensive enough for production confidence. I added: (1) stress tests with 100K+ elements, (2) tests for negative numbers and zeros, (3) tests with all identical elements (edge case for pivot-based sorts), (4) random data generation to catch corner cases, (5) performance tests that assert completion within reasonable time (not just correctness). The original tests didn't verify array stability or in-place properties—I added comments clarifying which algorithms should/shouldn't preserve order. Test coverage was about 70%; I added tests to reach 95%+.
+The test data wasn't comprehensive enough for production confidence. I added: (1) stress tests with 100K+ elements, (2) tests for negative numbers and zeros, (3) tests with all identical elements (edge case for pivot-based sorts), (4) random data generation to catch corner cases, (5) performance tests that assert completion within reasonable time (not just correctness). The original tests didn't verify array stability or in-place propertiesâ€”I added comments clarifying which algorithms should/shouldn't preserve order. Test coverage was about 70%; I added tests to reach 95%+.
 
 **Best Prompt Wording:**
 > "Generate xUnit unit tests for QuickSort. Cover: empty array, single element, already sorted, reverse sorted, duplicates, and a large random array (100K elements). For each test, assert the result is sorted and contains the same elements as the input."
@@ -414,10 +414,10 @@ This worked because it: (1) named the specific test framework (xUnit), (2) enume
 ### Task C1-C2: Blazor Visualizer (Canvas Setup & Animated Sorting)
 
 **What Copilot Got Right:**
-Canvas setup (OnAfterRenderAsync, 2D context initialization, drawing basics) was correctly implemented. GenerateRandomArray method worked perfectly. The basic DrawArray logic (calculating bar width, height from proportions, rendering) was sound. The UI controls (dropdown, slider, buttons) were properly structured. Color-coded visualization logic was correct—comparing elements show orange, sorted show green. State management with `isSorting` flag was appropriate.
+Canvas setup (OnAfterRenderAsync, 2D context initialization, drawing basics) was correctly implemented. GenerateRandomArray method worked perfectly. The basic DrawArray logic (calculating bar width, height from proportions, rendering) was sound. The UI controls (dropdown, slider, buttons) were properly structured. Color-coded visualization logic was correctâ€”comparing elements show orange, sorted show green. State management with `isSorting` flag was appropriate.
 
 **What Needed Manual Correction:**
-**Canvas drawing performance:** Copilot's initial implementation redrew the entire canvas every frame, which was inefficient. I added JavaScript interop to batch drawing calls and use `requestAnimationFrame` for smoother rendering. **Animation timing:** The delay logic was there but didn't account for user changes to the speed slider mid-animation. I added responsive delay handling. **Stats tracking:** Comparisons and swaps counters were missing; adding them required threading the stats through every algorithm call—not trivial. **Stop button behavior:** Copilot made the stop button simply reset the array; I had to implement state preservation (frozen stats, cancelled animation, no array regeneration until new sort starts). **JavaScript interop:** Blazor couldn't draw directly to canvas; I had to create `sortingApi.js` with `drawSortingArray()` function that Copilot couldn't foresee.
+**Canvas drawing performance:** Copilot's initial implementation redrew the entire canvas every frame, which was inefficient. I added JavaScript interop to batch drawing calls and use `requestAnimationFrame` for smoother rendering. **Animation timing:** The delay logic was there but didn't account for user changes to the speed slider mid-animation. I added responsive delay handling. **Stats tracking:** Comparisons and swaps counters were missing; adding them required threading the stats through every algorithm callâ€”not trivial. **Stop button behavior:** Copilot made the stop button simply reset the array; I had to implement state preservation (frozen stats, cancelled animation, no array regeneration until new sort starts). **JavaScript interop:** Blazor couldn't draw directly to canvas; I had to create `sortingApi.js` with `drawSortingArray()` function that Copilot couldn't foresee.
 
 **Best Prompt Wording (Initial - Moderately Effective):**
 > "In VisualizerPage.razor, implement an animated BubbleSort method. After each swap, call DrawArray to highlight comparing elements in orange and sorted elements in green. Use await Task.Delay(50) between steps."
@@ -432,10 +432,10 @@ The second prompt worked better because it: (1) broke down the algorithm into di
 ### Task B3-B5: Benchmarking (Stopwatch, Sequential vs Parallel, API Endpoint)
 
 **What Copilot Got Right:**
-Stopwatch usage was correct—proper start/stop, TotalMilliseconds conversion, iteration loops. The BenchmarkResult record was well-designed with appropriate fields. API endpoint validation (checking array size bounds) was correctly implemented. The response DTO structure was sensible (iterations, arraySize, timings for both algorithms).
+Stopwatch usage was correctâ€”proper start/stop, TotalMilliseconds conversion, iteration loops. The BenchmarkResult record was well-designed with appropriate fields. API endpoint validation (checking array size bounds) was correctly implemented. The response DTO structure was sensible (iterations, arraySize, timings for both algorithms).
 
 **What Needed Manual Correction:**
-Statistical rigor was lacking—the original code ran 50 iterations with no warm-up. I added: (1) 3-5 warm-up iterations before measurements to stabilize JIT compilation, (2) 100 iterations instead of 50 for better statistical significance, (3) mean/median/stddev calculations instead of just average, (4) multiple array size tests (1K, 10K, 100K, 1M) instead of single size. Copilot's benchmark cloned the array but didn't reset it between runs, leading to slightly different data each time; I added a fixed random seed (12345) for reproducibility. Error handling was minimal; I added try-catch for OutOfMemoryException and timeout detection.
+Statistical rigor was lackingâ€”the original code ran 50 iterations with no warm-up. I added: (1) 3-5 warm-up iterations before measurements to stabilize JIT compilation, (2) 100 iterations instead of 50 for better statistical significance, (3) mean/median/stddev calculations instead of just average, (4) multiple array size tests (1K, 10K, 100K, 1M) instead of single size. Copilot's benchmark cloned the array but didn't reset it between runs, leading to slightly different data each time; I added a fixed random seed (12345) for reproducibility. Error handling was minimal; I added try-catch for OutOfMemoryException and timeout detection.
 
 **Best Prompt Wording (Initial - Weak):**
 > "Add a benchmarking method using Stopwatch that runs QuickSort and Array.Sort() on the same large array 100 times and prints average time for each."
@@ -453,7 +453,7 @@ The second prompt worked better because it: (1) requested specific warm-up logic
 All methods received proper `<summary>` tags with clear descriptions. `<param>` and `<returns>` tags were present and accurate. Complexity information was included in `<remarks>` sections. `<exception>` tags correctly identified ArgumentNullException where appropriate. Overall structure matched Microsoft's XML documentation conventions perfectly.
 
 **What Needed Manual Correction:**
-The remarks sections were too terse—they stated complexity but didn't explain *why* or when it matters. I expanded them significantly with: (1) stability information (which sorts preserve order of equal elements), (2) in-place vs. not-in-place, (3) real-world use cases ("InsertionSort is excellent for small arrays"), (4) practical warnings ("QuickSort can degrade to O(n²) on already-sorted data"), (5) comparison context ("MergeSort guarantees O(n log n) but uses 2x memory"). The param descriptions for algorithms with complex logic (like partition functions) were generic; I made them more precise about index meanings and boundary conditions. Examples in remarks would have been helpful but weren't requested.
+The remarks sections were too terseâ€”they stated complexity but didn't explain *why* or when it matters. I expanded them significantly with: (1) stability information (which sorts preserve order of equal elements), (2) in-place vs. not-in-place, (3) real-world use cases ("InsertionSort is excellent for small arrays"), (4) practical warnings ("QuickSort can degrade to O(nÂ²) on already-sorted data"), (5) comparison context ("MergeSort guarantees O(n log n) but uses 2x memory"). The param descriptions for algorithms with complex logic (like partition functions) were generic; I made them more precise about index meanings and boundary conditions. Examples in remarks would have been helpful but weren't requested.
 
 **Best Prompt Wording:**
 > "Generate XML documentation for all public methods in SortingService. Each must include: <summary> describing what the algorithm does, <param> for each parameter, <returns> describing the output, <remarks> with time and space complexity, and <exception> for exceptions thrown. Format remarks as: 'Time: O(x) best/avg/worst. Space: O(y). Stable: yes/no. Use case: ...'.
@@ -633,9 +633,9 @@ After:   [5, 3, 1, 2, 6, 7, 8] (partition complete)
 
 ### Performance Characteristics
 
-- **Rendering:** ~2ms per frame (60 bars × 900px canvas)
+- **Rendering:** ~2ms per frame (60 bars Ã— 900px canvas)
 - **Animation smoothness:** 50ms delays feel smooth to human eye
-- **Memory:** Canvas buffer ~36KB (900×400 pixels × 1 byte per channel)
+- **Memory:** Canvas buffer ~36KB (900Ã—400 pixels Ã— 1 byte per channel)
 - **UI responsiveness:** Maintained even during fast animations
 
 ### Browser Compatibility
@@ -655,7 +655,7 @@ All modern browsers handle canvas rendering efficiently.
 
 - **QuickSort's Strength:** O(n log n) average with excellent cache locality and in-place sorting make it the go-to choice for most scenarios
   
-- **Worst-Case Risk:** O(n²) complexity with poor pivot selection (e.g., already-sorted data). Introsort mitigates this by switching algorithms
+- **Worst-Case Risk:** O(nÂ²) complexity with poor pivot selection (e.g., already-sorted data). Introsort mitigates this by switching algorithms
   
 - **Parallel Scalability:** Parallelization only beneficial for large arrays (>500K elements); overhead outweighs benefits for smaller datasets
   
