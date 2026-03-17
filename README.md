@@ -38,19 +38,12 @@ This project demonstrates 8 sorting algorithms implemented in C# with a visualiz
    cd Lab01_API
    ```
 
-2. **Run the API Project:**
+2. **Start the Project Project:**
    ```bash
-   cd Lab01_API
-   dotnet run
+   just press the start button
    ```
 
-3. **Run the Blazor Project (in a new terminal):**
-   ```bash
-   cd BlazorApp
-   dotnet run
-   ```
-
-4. **Open in Browser:** Navigate to `https://localhost:7333`
+3. **Open in Browser:** Navigate to `https://localhost:7333`
 
 ---
 
