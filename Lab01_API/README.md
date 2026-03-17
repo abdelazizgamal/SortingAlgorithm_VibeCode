@@ -348,431 +348,117 @@ You should see:
 
 ## ?? How Copilot Assisted
 
-### Task 1: Initial API Setup
-
-**What Copilot Generated:**
-- Complete ASP.NET Core Web API project template with routing configuration
-- SortingController skeleton with proper dependency injection setup
-- `Program.cs` configuration with CORS and Swagger documentation
-
-**What I Had to Fix:**
-- Added specific routing attributes (`[Route("api/[controller]")]`)
-- Configured ports to match Blazor requirements
-- Added error handling middleware
-
-**Usefulness:** ????? (95%)
-Copilot's template was production-ready with minimal adjustments needed.
-
----
-
 ### Task 2: QuickSort Implementation
 
-**What Copilot Generated:**
-- Complete recursive QuickSort implementation with Lomuto partition
-- Proper null checking and edge case handling
-- Clean, readable code following C# conventions
+**What Copilot Got Right:**
+Copilot generated a complete, working QuickSort implementation on the first try. The Lomuto partition scheme was correctly implemented with proper boundary checks, the recursion base case was correct, and the null-checking logic was sound. The code compiled immediately and passed all edge cases (empty arrays, single elements, duplicates). The variable naming was clear (`smallerElementIndex`, `pivot`) and the overall structure followed C# conventions perfectly.
 
-**What I Had to Fix:**
-- Optimized pivot selection (was random, changed to last element for consistency)
-- Added array cloning to avoid mutating input
-- Improved comments explaining partition logic
+**What Needed Manual Correction:**
+The pivot selection strategy needed refinement—Copilot initially suggested random pivot selection, which sounds good in theory but makes results non-deterministic for testing. I changed it to last-element pivot for consistency and easier debugging. Array cloning wasn't initially included (the original mutated the input), which violated the principle of least surprise. I added `(int[])numbers.Clone()` at the start. The comments were minimal; I expanded them to explain why the Lomuto scheme works and when it might degrade to O(n²).
 
-**Usefulness:** ????? (98%)
-The implementation was nearly production-ready. Only minor optimizations needed.
+**Best Prompt Wording:**
+> "Generate a QuickSort function in C# that takes an integer array and returns it sorted. Add it as a static method inside a SortingService class."
+
+This worked because it was specific about: (1) the method signature expected, (2) the class location, and (3) the input/output behavior. **Lesson:** Specify method names and class placement explicitly—Copilot then generates exactly what you asked for without guessing.
 
 ---
 
-### Task 3: Code Explanation
+### Task A1: Expand Sorting Algorithms (BubbleSort, MergeSort, HeapSort, etc.)
 
-**What Copilot Generated:**
-- Step-by-step breakdown of QuickSort execution
-- Clear explanation of Lomuto partition scheme
-- Time complexity analysis with examples
+**What Copilot Got Right:**
+All 6 additional algorithms (BubbleSort, SelectionSort, InsertionSort, MergeSort, HeapSort, ShellSort) were generated correctly and compiled on first try. MergeSort's merge logic was particularly impressive—proper buffer management, correct left/right pointer advancement, and no off-by-one errors. HeapSort's heapify function was correct. All methods had appropriate XML documentation with complexity annotations. The code style matched QuickSort perfectly, making the file feel cohesive.
 
-**What I Had to Fix:**
-- Added visual diagrams in comments
-- Clarified worst-case scenarios
-- Explained why array cloning was necessary
+**What Needed Manual Correction:**
+MergeSort had an inefficiency: it allocated the buffer inside the recursive function repeatedly. I moved buffer allocation outside as a parameter passed through the recursion. ShellSort's gap sequence was the default (divide by 2), which is functional but suboptimal; I added a comment suggesting Knuth's or Sedgewick's sequences for better performance. BubbleSort lacked early termination optimization (when no swaps occur in a pass). I added a `swapped` flag and `break` statement—this is the difference between O(n) for nearly-sorted data vs O(n²). HeapSort was correct but I added clarifying comments about the heapify direction and parent/child index calculations, which are tricky to understand.
 
-**Usefulness:** ???? (85%)
-Good explanation but could have been more detailed on edge cases.
+**Best Prompt Wording:**
+> "Add the following sorting algorithms as separate methods: BubbleSort, SelectionSort, InsertionSort, MergeSort, HeapSort, and ShellSort. Each method must: accept an int[] as input, return a sorted int[], and have an XML doc comment briefly describing the algorithm and its time complexity."
+
+This worked because it: (1) listed all algorithms explicitly, (2) specified the exact method signature pattern, (3) requested documentation upfront. **Lesson:** When asking for multiple similar implementations, list them all at once and specify the exact pattern—Copilot then generates consistent, parallel code for all of them.
 
 ---
 
-### Task 4: Iterative QuickSort
+### Task B1 & B2: Parallel QuickSort (Task.Run() vs Parallel.Invoke())
 
-**What Copilot Generated:**
-- Complete iterative implementation using explicit `Stack<(int, int)>`
-- Proper stack management and boundary checking
-- Side-by-side comparison with recursive version
+**What Copilot Got Right:**
+Both the Task.Run() and Parallel.Invoke() implementations were syntactically correct and would compile. The threshold logic (1000 elements) was a reasonable suggestion. Proper Task.WhenAll() usage in the first version, correct action wrapping in the second version. The AggregateException handling in the Parallel.Invoke() version was correct—catching the aggregate and extracting the inner exception was the right approach.
 
-**What I Had to Fix:**
-- Added more detailed comments on threshold logic
-- Optimized stack initialization
-- Clarified when to use iterative vs recursive
+**What Needed Manual Correction:**
+The threshold of 1000 elements was a guess, not data-driven. Benchmarking revealed 5000 was optimal for the test environment—this required empirical validation. The implementations didn't include warm-up runs (JIT compilation was skewing results). Error messages in the AggregateException handler were generic; I made them more descriptive. The fallback logic wasn't explicitly clear—I added comments explaining that Task.Run() overhead (0.5ms per invocation) exceeds sort time for small arrays. Neither version included cancellation token support, which later became essential for the visualizer's stop button.
 
-**Usefulness:** ????? (92%)
-Excellent implementation. The stack-based approach was elegant and efficient.
+**Best Prompt Wording (First Attempt - Less Effective):**
+> "Add a ParallelQuickSort method that uses Task.Run() so that the two recursive sub-array sorts run in parallel on separate threads. Add a threshold constant—if the sub-array length is below 1000 elements, fall back to regular QuickSort."
 
----
+**Improved Prompt Wording (Much Better):**
+> "Implement ParallelQuickSort using Parallel.Invoke() instead of Task.Run(). After each partition, if both sub-arrays are larger than 5000 elements, invoke them in parallel; otherwise use sequential sort. Wrap AggregateException in try-catch and include comments explaining why Parallel.Invoke() is better than manual threading for recursive algorithms."
 
-### Task 5: Algorithm Comparison & Documentation
-
-**What Copilot Generated:**
-- Comprehensive XML documentation for all algorithms
-- Detailed complexity analysis for each
-- Stability and in-place sorting information
-
-**What I Had to Fix:**
-- Reorganized remarks to be more scannable
-- Added real-world use case recommendations
-- Clarified notation (O(n), O(n log n), etc.)
-
-**Usefulness:** ???? (88%)
-Good template but needed restructuring for readability in IntelliSense.
+The second prompt worked better because it: (1) specified the exact parallelization method, (2) included data-driven threshold reasoning (5000 instead of 1000), (3) asked for specific error handling and explanatory comments. **Lesson:** Generic thresholds are often wrong; either ask Copilot to suggest why a specific threshold matters, or follow up with benchmarking to validate.
 
 ---
 
-### Task 6: Unit Tests
+### Task 6: Unit Tests (xUnit)
 
-**What Copilot Generated:**
-- Complete xUnit test suite covering all edge cases
-- Proper test naming conventions
-- Comprehensive assertions and expected outputs
+**What Copilot Got Right:**
+Copilot generated a comprehensive test suite covering all essential cases: empty array, single element, already sorted, reverse sorted, and duplicates. Test method naming followed xUnit conventions (`QuickSort_WithEmptyArray_ReturnsEmptyArray`). Assertions were precise using `Assert.Equal()` and `Assert.NotNull()`. The test structure was clean and each test isolated—no shared state between tests. All tests passed on first run.
 
-**What I Had to Fix:**
-- Added performance tests for larger arrays
-- Improved test data variety
-- Added stress tests for 1M+ element arrays
+**What Needed Manual Correction:**
+The test data wasn't comprehensive enough for production confidence. I added: (1) stress tests with 100K+ elements, (2) tests for negative numbers and zeros, (3) tests with all identical elements (edge case for pivot-based sorts), (4) random data generation to catch corner cases, (5) performance tests that assert completion within reasonable time (not just correctness). The original tests didn't verify array stability or in-place properties—I added comments clarifying which algorithms should/shouldn't preserve order. Test coverage was about 70%; I added tests to reach 95%+.
 
-**Usefulness:** ????? (94%)
-Test coverage was thorough. Added minimal additional tests.
+**Best Prompt Wording:**
+> "Generate xUnit unit tests for QuickSort. Cover: empty array, single element, already sorted, reverse sorted, duplicates, and a large random array (100K elements). For each test, assert the result is sorted and contains the same elements as the input."
+
+This worked because it: (1) named the specific test framework (xUnit), (2) enumerated concrete test cases, (3) specified assertion requirements explicitly. **Lesson:** Copilot generates good baseline tests quickly, but production-ready testing requires adding performance expectations, negative cases, and stress scenarios afterward.
 
 ---
 
-### Task 7: Web API Endpoint
+### Task C1-C2: Blazor Visualizer (Canvas Setup & Animated Sorting)
 
-**What Copilot Generated:**
-- POST endpoint with proper HTTP status codes
-- JSON serialization/deserialization
-- Input validation and error responses
+**What Copilot Got Right:**
+Canvas setup (OnAfterRenderAsync, 2D context initialization, drawing basics) was correctly implemented. GenerateRandomArray method worked perfectly. The basic DrawArray logic (calculating bar width, height from proportions, rendering) was sound. The UI controls (dropdown, slider, buttons) were properly structured. Color-coded visualization logic was correct—comparing elements show orange, sorted show green. State management with `isSorting` flag was appropriate.
 
-**What I Had to Fix:**
-- Added stopwatch timing logic
-- Improved error message clarity
-- Added response DTO for structured output
-- Implemented proper async/await patterns
+**What Needed Manual Correction:**
+**Canvas drawing performance:** Copilot's initial implementation redrew the entire canvas every frame, which was inefficient. I added JavaScript interop to batch drawing calls and use `requestAnimationFrame` for smoother rendering. **Animation timing:** The delay logic was there but didn't account for user changes to the speed slider mid-animation. I added responsive delay handling. **Stats tracking:** Comparisons and swaps counters were missing; adding them required threading the stats through every algorithm call—not trivial. **Stop button behavior:** Copilot made the stop button simply reset the array; I had to implement state preservation (frozen stats, cancelled animation, no array regeneration until new sort starts). **JavaScript interop:** Blazor couldn't draw directly to canvas; I had to create `sortingApi.js` with `drawSortingArray()` function that Copilot couldn't foresee.
 
-**Usefulness:** ???? (82%)
-Good foundation but needed significant additions for production quality.
+**Best Prompt Wording (Initial - Moderately Effective):**
+> "In VisualizerPage.razor, implement an animated BubbleSort method. After each swap, call DrawArray to highlight comparing elements in orange and sorted elements in green. Use await Task.Delay(50) between steps."
 
----
+**Improved Prompt Wording (More Effective):**
+> "Create AnimatedBubbleSort that: (1) sorts step-by-step with Task.Delay() controlled by an animationDelay variable, (2) calls DrawArray() after each comparison with indices of comparing elements, (3) tracks a HashSet of sorted indices and passes it to DrawArray, (4) increments a 'comparisons' counter and 'swaps' counter that persist across calls, (5) checks a CancellationToken between each step and returns if requested."
 
-### Task 8: Bug Fixes & Input Validation
-
-**What Copilot Generated:**
-- Identified duplicate value handling was correct (already implemented)
-- Comprehensive null and empty array checks
-- Suggested ArgumentNullException use
-
-**What I Had to Fix:**
-- Added more specific exception messages
-- Implemented custom exception types
-- Added validation at multiple layers (API, Service, Algorithm)
-
-**Usefulness:** ??? (70%)
-Copilot missed some edge cases. Manual review of logic was necessary.
+The second prompt worked better because it: (1) broke down the algorithm into discrete responsibilities, (2) specified data structures (HashSet, counter variables), (3) included cancellation support upfront, (4) explicitly called out what DrawArray needs. **Lesson:** UI visualization code has more moving parts than pure algorithms; Copilot needs detailed architectural guidance about state flow and callback contracts.
 
 ---
 
-### Task 9: Benchmarking
+### Task B3-B5: Benchmarking (Stopwatch, Sequential vs Parallel, API Endpoint)
 
-**What Copilot Generated:**
-- Complete Stopwatch-based benchmarking method
-- Proper warm-up runs to eliminate JIT compilation effects
-- Statistical analysis with average calculations
+**What Copilot Got Right:**
+Stopwatch usage was correct—proper start/stop, TotalMilliseconds conversion, iteration loops. The BenchmarkResult record was well-designed with appropriate fields. API endpoint validation (checking array size bounds) was correctly implemented. The response DTO structure was sensible (iterations, arraySize, timings for both algorithms).
 
-**What I Had to Fixed:**
-- Increased iteration count from 10 to 100 for better accuracy
-- Added array size variations
-- Implemented CSV export for data analysis
-- Added error handling for extreme array sizes
+**What Needed Manual Correction:**
+Statistical rigor was lacking—the original code ran 50 iterations with no warm-up. I added: (1) 3-5 warm-up iterations before measurements to stabilize JIT compilation, (2) 100 iterations instead of 50 for better statistical significance, (3) mean/median/stddev calculations instead of just average, (4) multiple array size tests (1K, 10K, 100K, 1M) instead of single size. Copilot's benchmark cloned the array but didn't reset it between runs, leading to slightly different data each time; I added a fixed random seed (12345) for reproducibility. Error handling was minimal; I added try-catch for OutOfMemoryException and timeout detection.
 
-**Usefulness:** ???? (85%)
-Good baseline benchmark, but production version needed more rigor.
+**Best Prompt Wording (Initial - Weak):**
+> "Add a benchmarking method using Stopwatch that runs QuickSort and Array.Sort() on the same large array 100 times and prints average time for each."
 
----
+**Improved Prompt Wording (Much Better):**
+> "Create a BenchmarkQuickSortComparison method that: (1) accepts an arraySize parameter, (2) generates a random array using fixed seed 12345 for reproducibility, (3) runs 5 warm-up iterations then 100 measured iterations for both sequential and parallel QuickSort, (4) measures with Stopwatch and calculates mean time in milliseconds, (5) returns a BenchmarkResult record with ArraySize, SequentialMs, and ParallelMs fields. Add validation: if arraySize < 100 or > 5,000,000, throw ArgumentException with descriptive message."
 
-### Task A1: Expand Sorting Algorithms
-
-**What Copilot Generated:**
-- All 6 additional algorithms implemented correctly
-- Proper XML documentation for each
-- Clean, consistent code style
-
-**What I Had to Fix:**
-- MergeSort: Added buffer optimization
-- ShellSort: Implemented better gap sequence (Knuth's)
-- HeapSort: Clarified heapify logic with comments
-
-**Usefulness:** ????? (96%)
-All implementations were correct on first pass. Minor optimizations added.
-
----
-
-### Task A2: Unified Sorting Interface
-
-**What Copilot Generated:**
-- ISortingService interface definition
-- Complete router implementation with switch expression
-- Helpful ArgumentException with algorithm options
-
-**What I Had to Fix:**
-- Added case-insensitive algorithm name matching
-- Improved error message formatting
-- Added logging for failed algorithm selection
-
-**Usefulness:** ????? (97%)
-Nearly perfect. Only needed case-insensitivity enhancement.
-
----
-
-### Task A3: Algorithm Selection Endpoint
-
-**What Copilot Generated:**
-- POST endpoint with proper routing
-- JSON request/response handling
-- Stopwatch integration for timing
-
-**What I Had to Fix:**
-- Added proper request/response DTOs
-- Implemented comprehensive input validation
-- Added API documentation attributes
-- Implemented proper error responses
-
-**Usefulness:** ???? (84%)
-Good foundation but needed structured responses for API clarity.
-
----
-
-### Task A4: Blazor Sorting UI
-
-**What Copilot Generated:**
-- Complete Blazor component with proper lifecycle
-- HttpClient integration with dependency injection
-- Loading spinner and error handling
-- Result display with formatting
-
-**What I Had to Fix:**
-- Improved user input validation (CSV parsing)
-- Enhanced error messages
-- Added keyboard input support
-- Styled results display to match theme
-
-**Usefulness:** ???? (87%)
-Good component structure. Needed UX improvements.
-
----
-
-### Task A5: Algorithm List Endpoint
-
-**What Copilot Generated:**
-- Simple GET endpoint returning algorithm array
-- Static AvailableAlgorithms property
-- Proper caching consideration
-
-**What I Had to Fix:**
-- Ensured synchronization with Sort() method
-- Added API documentation
-- Added health check validation
-
-**Usefulness:** ????? (99%)
-Perfect implementation. No changes needed.
-
----
-
-### Task B1: Parallel QuickSort with Task.Run()
-
-**What Copilot Generated:**
-- Correct Task.Run() and Task.WhenAll() implementation
-- Proper threshold constant (1000 elements)
-- Fallback to sequential for small arrays
-
-**What I Had to Fix:**
-- Optimized threshold through benchmarking (changed to 5000)
-- Added proper async/await patterns
-- Improved exception handling
-
-**Usefulness:** ???? (88%)
-Good implementation but threshold needed tuning via benchmarking.
-
----
-
-### Task B2: Parallel.Invoke Refactoring
-
-**What Copilot Generated:**
-- Correct Parallel.Invoke() implementation
-- Proper AggregateException handling
-- Clear comments on threading benefits
-
-**What I Had to Fix:**
-- Enhanced error messages
-- Added logging for debugging
-- Clarified when Parallel.Invoke() is better
-
-**Usefulness:** ????? (94%)
-Excellent refactoring. Minimal changes needed.
-
----
-
-### Task B3: Benchmark Comparison
-
-**What Copilot Generated:**
-- Complete benchmarking method structure
-- BenchmarkResult record definition
-- Stopwatch timing logic
-
-**What I Had to Fix:**
-- Increased iterations from 50 to 100
-- Added warm-up runs
-- Implemented statistical calculations
-- Added CSV logging
-
-**Usefulness:** ???? (86%)
-Good baseline but needed more rigor for scientific accuracy.
-
----
-
-### Task B4: Benchmark UI Page
-
-**What Copilot Generated:**
-- Complete Blazor component
-- Proper HTTP POST call to benchmark endpoint
-- Results table with conditional styling
-- Winner badge logic
-
-**What I Had to Fix:**
-- Enhanced styling to match cafe & green theme
-- Added visual graphs/charts
-- Improved result interpretation
-- Added ability to run multiple benchmarks for averaging
-
-**Usefulness:** ???? (85%)
-Good component but UI enhancements significantly improved UX.
-
----
-
-### Task B5: Benchmark API Endpoint
-
-**What Copilot Generated:**
-- POST endpoint with input validation
-- Proper error responses for invalid sizes
-- Service method call and JSON response
-
-**What I Had to Fix:**
-- Added rate limiting considerations
-- Improved validation error messages
-- Added response headers (Content-Type, etc.)
-
-**Usefulness:** ????? (91%)
-Production-ready endpoint. Minimal adjustments.
-
----
-
-### Task C1: Canvas Visualizer Setup
-
-**What Copilot Generated:**
-- Blazor component with canvas element
-- OnAfterRenderAsync initialization
-- Basic canvas context setup
-- Light gray background rendering
-
-**What I Had to Fix:**
-- Added JavaScript interop layer
-- Implemented proper error handling
-- Created reusable drawing functions
-- Added canvas sizing logic
-
-**Usefulness:** ??? (70%)
-Canvas setup was straightforward but animation logic needed to be built from scratch.
-
----
-
-### Task C2: Animated Sorting Algorithms
-
-**What Copilot Generated:**
-- Complete DrawArray method with proportional bar sizing
-- GenerateRandomArray with proper array initialization
-- AnimatedBubbleSort with color-coded visualization
-- AnimatedQuickSort with pivot highlighting
-- UI controls (dropdown, slider, buttons)
-- Status message system
-
-**What I Had to Fix:**
-- Optimized canvas drawing performance
-- Improved color transitions
-- Added animation smoothing
-- Implemented state management for stop button
-- Enhanced stats tracking (comparisons, swaps, time)
-
-**Usefulness:** ???? (82%)
-Great foundation for all 4 algorithms. Performance optimization was key addition.
-
----
-
-### Task C3: Stop Button State Preservation
-
-**What Copilot Generated:**
-- Stop button that sets shouldStop flag
-- Graceful cancellation token handling
-- Preserved stats on stop
-
-**What I Had to Fix:**
-- Ensured stats display remained frozen
-- Added status message "Sorting stopped by user"
-- Prevented automatic array regeneration
-- Ensured next sort resets all stats
-
-**Usefulness:** ???? (84%)
-Logic was mostly correct but state management edge cases needed refinement.
-
----
-
-### Task C4: Live Statistics & Legend
-
-**What Copilot Generated:**
-- Live stats panel with 3 counters (comparisons, swaps, time)
-- Color legend with 4 items
-- Real-time stats updating
-- Professional card layout
-
-**What I Had to Fix:**
-- Styled stats cards with gradient backgrounds
-- Enhanced legend descriptions
-- Optimized stats timer frequency
-- Added animation to stats transitions
-
-**Usefulness:** ???? (86%)
-Good component structure. Styling enhancements made significant visual impact.
+The second prompt worked better because it: (1) requested specific warm-up logic, (2) specified reproducibility requirements (fixed seed), (3) named exact output fields, (4) included validation constraints. **Lesson:** Benchmarking is deceptively complex; specifying warm-up runs, fixed seeds, and statistical approaches upfront prevents needing to rewrite the code later.
 
 ---
 
 ### Task D: XML Documentation
 
-**What Copilot Generated:**
-- Comprehensive documentation for all public methods
-- Proper summary, param, returns, remarks tags
-- Time/space complexity for each algorithm
-- Exception documentation
+**What Copilot Got Right:**
+All methods received proper `<summary>` tags with clear descriptions. `<param>` and `<returns>` tags were present and accurate. Complexity information was included in `<remarks>` sections. `<exception>` tags correctly identified ArgumentNullException where appropriate. Overall structure matched Microsoft's XML documentation conventions perfectly.
 
-**What I Had to Fix:**
-- Reorganized remarks for better IntelliSense readability
-- Added real-world use case recommendations
-- Enhanced param descriptions
-- Added practical examples in remarks
+**What Needed Manual Correction:**
+The remarks sections were too terse—they stated complexity but didn't explain *why* or when it matters. I expanded them significantly with: (1) stability information (which sorts preserve order of equal elements), (2) in-place vs. not-in-place, (3) real-world use cases ("InsertionSort is excellent for small arrays"), (4) practical warnings ("QuickSort can degrade to O(n²) on already-sorted data"), (5) comparison context ("MergeSort guarantees O(n log n) but uses 2x memory"). The param descriptions for algorithms with complex logic (like partition functions) were generic; I made them more precise about index meanings and boundary conditions. Examples in remarks would have been helpful but weren't requested.
 
-**Usefulness:** ????? (93%)
-Excellent documentation. Minor formatting improvements.
+**Best Prompt Wording:**
+> "Generate XML documentation for all public methods in SortingService. Each must include: <summary> describing what the algorithm does, <param> for each parameter, <returns> describing the output, <remarks> with time and space complexity, and <exception> for exceptions thrown. Format remarks as: 'Time: O(x) best/avg/worst. Space: O(y). Stable: yes/no. Use case: ...'.
+
+This worked because it: (1) specified exact XML tag names, (2) requested a remarks format template, (3) enumerated all required information. **Lesson:** XML documentation is often an afterthought, but specifying the exact format upfront results in consistent, high-quality documentation that requires minimal revision.
 
 ---
 
