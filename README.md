@@ -43,13 +43,7 @@ This project demonstrates 8 sorting algorithms implemented in C# with a visualiz
    just press the start button
    ```
 
-3. **Run the Blazor Project (in a new terminal):**
-   ```bash
-   cd BlazorApp
-   dotnet run
-   ```
-
-4. **Open in Browser:** Navigate to `https://localhost:7333`
+3. **Open in Browser:** Navigate to `https://localhost:7333`
 
 ---
 
