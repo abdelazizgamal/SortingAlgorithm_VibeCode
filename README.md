@@ -137,22 +137,13 @@ Users can adjust animation speed (10-500ms), regenerate random arrays of 60 elem
 5. **Visualizations Aid Learning:** Building the step-by-step canvas drawing revealed edge behaviors in the algorithms standard unit testing missed.
 
 ---
+## 📸 Screenshots
 
-## ?? Screenshots
-
-Here are some screenshots demonstrating the application's features and visualizer in action:
-
-<div style="display: flex; flex-wrap: wrap; gap: 10px;">
-  <img src="screens/1.png" alt="Screenshot 1" width="48%" />
-  <img src="screens/2.png" alt="Screenshot 2" width="48%" />
-  <img src="screens/3.png" alt="Screenshot 3" width="48%" />
-  <img src="screens/4.png" alt="Screenshot 4" width="48%" />
-  <img src="screens/5.png" alt="Screenshot 5" width="48%" />
-  <img src="screens/6.png" alt="Screenshot 6" width="48%" />
-  <img src="screens/7.png" alt="Screenshot 7" width="48%" />
-  <img src="screens/8.png" alt="Screenshot 8" width="48%" />
-  <img src="screens/9.png" alt="Screenshot 9" width="48%" />
-  <img src="screens/10.png" alt="Screenshot 10" width="48%" />
-  <img src="screens/11.png" alt="Screenshot 11" width="48%" />
-  <img src="screens/12.png" alt="Screenshot 12" width="48%" />
-</div>
+| | |
+|---|---|
+| ![](Screens/1.png) | ![](Screens/2.png) |
+| ![](Screens/3.png) | ![](Screens/4.png) |
+| ![](Screens/5.png) | ![](Screens/6.png) |
+| ![](Screens/7.png) | ![](Screens/8.png) |
+| ![](Screens/9.png) | ![](Screens/10.png) |
+| ![](Screens/11.png) | ![](Screens/12.png) |
